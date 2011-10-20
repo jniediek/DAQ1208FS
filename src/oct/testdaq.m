@@ -12,8 +12,8 @@ t = zeros(512,1);
 for i = 1:512
 	tic
 	daq1208fs('w', data(i));
-	daq1208fs('w', 0);
 	t(i) = toc
+	daq1208fs('w', 0);
 	sleep(.1)
 end
 

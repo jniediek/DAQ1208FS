@@ -7,6 +7,8 @@ extern "C" {
 #include "../../include/usb-1208FS.h"
 }
 
+int debug = 0;
+
 static HIDInterface * hid[4];
 
 int init() {
@@ -38,7 +40,8 @@ int init() {
 
 void writeData(unsigned int data) {
 	usbDOut_USB1208FS(hid[0], DIO_PORTA, (__u8) data);
-	octave_stdout << "Wrote " << data << "\n";
+	if ( debug )
+		octave_stdout << "Wrote " << data << "\n";
 }
 
 int deinit() {
