@@ -1,0 +1,5 @@
+LIBDIR='../../lib64'
+
+mkoctfile --mex -Wall -lhid daq1208fs.c $LIBDIR/pmd.o $LIBDIR/libmcchid.a 
+
+#$LIBDIR/libusb-0.1.so.4

@@ -1,0 +1,41 @@
+Special Notes on compiling the libhid version.
+
+1. You must have installed the following packages
+      libusb
+      libusb-devel
+      libusb-static
+
+   For example, on Fedora Core 8, they would be
+      libusb-static-0.1.12-10.fc8
+      libusb-0.1.12-10.fc8
+      libusb-devel-0.1.12-10.fc8
+
+   An easy way to get this is:
+     yum install libusb libusb-devel libusb-static
+
+2. You need to make and install the latest version of libhid
+   Instructions on doing this is at http://libhid.alioth.debian.org/.
+
+   Under Debian:  apt-get install libhid-dev python-hid
+  
+   Under RedHat: svn co svn://svn.debian.org/libhid/trunk libhid-svn
+   cd libhid-svn
+   sh ./autogen.sh
+   make
+   make install
+   (There may be some tweaking under FC6.  You might want to disable SWIG).
+
+3. Get the file 60-mcc.rules from ftp://lx10.tx.ncsu.edu/pub/Linux/drivers
+   cp 60-mcc.rules /etc/udev/rules.d
+   /sbin/udevcontrol --reload_rules 
+             or
+   /sbin/udevadm control --reload-rules
+     
+
+4. NOW you are ready to compile the MCC libhid programs
+   tar zxvf  MCCLIBHID.1.32.tgz
+   cd libhid
+   make
+   make install
+
+
