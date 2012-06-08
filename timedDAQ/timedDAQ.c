@@ -1,5 +1,6 @@
 #include <asm/types.h>
 #include <sys/time.h>
+#include <time.h>
 #include <signal.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -8,12 +9,13 @@
 
 static HIDInterface * hid[4];
 int debug = 1;
+FILE * logfile;
 
 void usb1208fs_dset(unsigned short data) {
 	usbDOut_USB1208FS(hid[0], DIO_PORTA, (__u8) data);
 	usbDOut_USB1208FS(hid[0], DIO_PORTA, 0);
 	if(debug)
-		printf("%u\t", data);
+		fprintf(logfile, "%u\t", data);
 }
 
 int usb1208fs_init() {
@@ -76,18 +78,35 @@ int main(int argc, char *argv[]) {
 	unsigned short z[] = {1,2,4,8,16,32,64,128};
 	unsigned short sig = 255;
 	unsigned int numStamps;
+	struct tm * tm;
 	struct timeval tv1, tv2;
 	long t1, t2;
 	int i;
+	
+	time_t now;
+	char logfilename[64];
+
+
 
 /* This sets up the correct deinitialization procedure */
 	act.sa_handler = handler;
 	sigaction(SIGINT, &act, NULL);
 	sigaction(SIGTERM, &act, NULL);
 
+	time(&now);
+	tm = localtime(&now);
+	snprintf(logfilename, sizeof(logfilename), "timedDAQ-log-%04d%02d%02d-%02d%02d%02d.log",
+			tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
+			tm->tm_hour, tm->tm_min, tm->tm_sec);
+	logfile = fopen(logfilename, "w");
+	if (logfile == NULL) {
+		fprintf(stderr, "Could not open logfile\n");
+		return(-1);
+	}
+	printf("Writing to file %s\n", logfilename);
 /* Initialize */	
 	usb1208fs_init();
-	printf("Initial signature: %u\t%u\n", sig, sig);
+	fprintf(logfile, "Initial signature: %u\t%u\n", sig, sig);
 	usb1208fs_dset(sig);
 	usb1208fs_dset(sig);
 
@@ -95,21 +114,24 @@ int main(int argc, char *argv[]) {
 	i = 0;
 /*Stamp counting starts with 0 */
 	numStamps = 0;	
+	
 	if(debug)
-		printf("\ndata\t");
-	printf("Stamp\tpre\tpost\n");
+		fprintf(logfile, "\ndata\t");
+	fprintf(logfile, "Stamp\tpre\tpost\n");
+
 	while(1) {
 		gettimeofday(&tv1, NULL);
 		usb1208fs_dset(z[i]);
 		gettimeofday(&tv2, NULL);
 		t1 = tv1.tv_sec * 1000000 + tv1.tv_usec;
 		t2 = tv2.tv_sec * 1000000 + tv2.tv_usec;
-		printf("%i\t%lu\t%lu\n", numStamps, t1, t2);
+		fprintf(logfile, "%i\t%lu\t%lu\n", numStamps, t1, t2);
 		numStamps++;
 		i++;
 		i %= 8;
 		gettimeofday(&tv2, NULL);
 		t2 = (1 - tv2.tv_sec) * 1000000 - tv2.tv_usec + t1;
+		fflush(logfile);
 		if(t2 > 0)
 			usleep(t2);
 	}
