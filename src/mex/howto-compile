@@ -1,4 +1,4 @@
-MATLABDIR = 
-LIBDIR = ../../lib64
+MATLABDIR=/usr/local/MATLAB/R2011a_Student
+LIBDIR=../../lib64
 
 gcc -I$MATLABDIR/extern/include -Wall -pedantic -lhid daq1208fs.c $LIBDIR/pmd.o $LIBDIR/libusb-0.1.so.4 $LIBDIR/libmcchid.a 
